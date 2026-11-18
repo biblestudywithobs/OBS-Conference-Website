@@ -1,0 +1,60 @@
+"use client";
+import { useState } from "react";
+
+const merch = ["Branded bottle", "OBS T-shirt", "Branded jotter", "Pen"];
+
+function YesNo({ name, label }) {
+  return (
+    <fieldset><legend>{label}</legend>
+      <div className="two">
+        {["Yes", "No"].map((v) => (
+          <label key={v} className="radio"><input type="radio" name={name} value={v} required /> {v}</label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+export default function RegisterForm() {
+  const [status, setStatus] = useState("idle");
+  const [pick, setPick] = useState(merch[0]);
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setStatus("sending");
+    const data = Object.fromEntries(new FormData(e.currentTarget));
+    try {
+      const res = await fetch("/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, merch: pick }) });
+      setStatus(res.ok ? "done" : "error");
+    } catch { setStatus("error"); }
+  }
+
+  if (status === "done") return <div className="card"><h3 className="display green">You&apos;re in.</h3><p>Your seat is saved. We&apos;ll be in touch on WhatsApp.</p></div>;
+
+  return (
+    <form className="card" onSubmit={onSubmit}>
+      <h3 className="display green">Let&apos;s save your place.</h3>
+      <p className="note">All fields are required unless marked optional.</p>
+      <div className="two">
+        <label>Full name<input name="name" placeholder="Your full name" required autoComplete="name" /></label>
+        <label>Email<input name="email" type="email" placeholder="you@example.com" required autoComplete="email" /></label>
+        <label>WhatsApp phone<input name="phone" type="tel" placeholder="+234 800 000 0000" required autoComplete="tel" /></label>
+        <label>City<input name="city" placeholder="Where are you coming from?" required /></label>
+      </div>
+      <label>Church / ministry / organisation (optional)<input name="org" placeholder="Your community or organisation" /></label>
+      <div className="two">
+        <YesNo name="first" label="First time at OBS conference?" />
+        <YesNo name="accom" label="Need accommodation?" />
+      </div>
+      <p className="note">Accommodation is a request; availability and details will be confirmed.</p>
+      <p className="rule">Choose one merchandise preference</p>
+      <div className="merch">
+        {merch.map((m) => (
+          <button type="button" key={m} className={pick === m ? "on" : ""} aria-pressed={pick === m} onClick={() => setPick(m)}>{m}</button>
+        ))}
+      </div>
+      <button className="btn-amber submit" disabled={status === "sending"}>{status === "sending" ? "Saving…" : "Save my seat"}</button>
+      {status === "error" && <p role="alert" className="err">Something went wrong. Please try again.</p>}
+    </form>
+  );
+}
