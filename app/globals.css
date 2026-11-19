@@ -43,7 +43,7 @@ a{color:inherit;text-decoration:none}
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;margin-bottom:2.5rem;flex-wrap:wrap}
 .head .display{font-size:clamp(2.8rem,6vw,5.5rem);max-width:12em}
 .head p{max-width:22rem;margin:0}
-.expect-photo{background-image:url(/images/expect.jpg)}
+.expect-photo{background-image:url(/images/hero.jpg)}
 .pill{position:absolute;display:inline-flex;align-items:center;gap:.6rem;flex-wrap:wrap;max-width:18rem;background:var(--dark);color:var(--cream);border:1px solid #2c5a3f;border-radius:999px;padding:.85rem 1.2rem;font:600 .85rem var(--f-sans);cursor:pointer;text-align:left}
 .pill b{color:var(--amber);font-weight:400;font-size:.7rem}
 .pill em{flex-basis:100%;font-style:normal;font-weight:400;font-size:.8rem;line-height:1.4;padding:.2rem 0 .1rem}
@@ -128,7 +128,7 @@ input:not([type=radio]){background:var(--paper);border:1px solid rgba(29,99,64,.
 .hero-photo,.expect-photo,.grow-photo{isolation:isolate;background:none}
 .hero-photo::before,.expect-photo::before,.grow-photo::before{content:"";position:absolute;inset:0;z-index:-1;background:#c9895b center/cover no-repeat;animation:zoom 2.4s var(--ease) both}
 .hero-photo::before{background-image:linear-gradient(to top,rgba(7,27,18,.75),transparent 40%),url(/images/hero.jpg)}
-.expect-photo::before{background-image:url(/images/expect.jpg)}
+.expect-photo::before{background-image:url(/images/hero.jpg)}
 .grow-photo::before{background-image:url(/images/group.jpg)}
 .facts>div{transition:transform .35s var(--ease)}.facts>div:hover{transform:translateY(-4px)}
 
@@ -194,3 +194,79 @@ select{appearance:none;background:var(--paper) url("data:image/svg+xml,%3Csvg xm
 .bg{position:absolute;inset:0;background-position:center;background-size:cover;opacity:0;transform:scale(1.08);transition:opacity .9s var(--ease),transform 1.8s var(--ease)}
 .bg.on{opacity:1;transform:scale(1)}
 .bgs::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(7,27,18,.45),transparent 45%)}
+
+/* ===== 3D hero (BookScene) ===== */
+.hero{position:relative;isolation:isolate}
+.hero-gl{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;animation:fadeUp 1.2s var(--ease) .3s forwards}
+.hero-gl canvas{display:block;width:100%;height:100%}
+[data-reduce="true"] .hero-gl{opacity:1}
+@media(prefers-reduced-motion:reduce){.hero-gl{opacity:1}}
+
+/* ===== Facilitators ===== */
+.facil{padding-top:5rem;padding-bottom:4rem}
+.facil-head{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem 2rem;flex-wrap:wrap}
+.facil-head .display{font-size:clamp(2.6rem,6vw,5rem)}
+.facil-head p{max-width:20rem;margin:0;font-size:.9rem}
+.facil-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem}
+.facil-photo{aspect-ratio:3/4;background:linear-gradient(to bottom,rgba(29,99,64,.75),var(--dark));overflow:hidden}
+.facil-photo svg{display:block;width:100%;height:100%;fill:#08190e}
+.facil h3{font:400 clamp(1.4rem,2.4vw,1.9rem)/1 var(--f-display);text-transform:uppercase;margin:.8rem 0 0}
+.moment{cursor:pointer}
+
+/* ===== Mobile menu ===== */
+.menu-btn{display:none;background:none;border:1px solid var(--green);width:44px;height:44px;padding:0;cursor:pointer;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+.menu-btn i{display:block;width:18px;height:1.5px;background:var(--green);transition:transform .3s var(--ease),opacity .3s}
+.nav.open .menu-btn i:nth-child(2){transform:translateY(6.5px) rotate(45deg)}
+.nav.open .menu-btn i:nth-child(3){opacity:0}
+.nav.open .menu-btn i:nth-child(4){transform:translateY(-6.5px) rotate(-45deg)}
+
+body{overflow-x:clip}
+
+@media(max-width:760px){
+  .nav{padding:.75rem 1rem}
+  .mark{font-size:1.8rem}
+  .brand{gap:.6rem;font-size:1rem}
+  .menu-btn{display:flex}
+  .nav nav{position:fixed;inset:68px 0 auto 0;flex-direction:column;align-items:stretch;gap:0;padding:.5rem 1rem 1.5rem;background:var(--cream);border-bottom:1px solid rgba(29,99,64,.2);box-shadow:0 30px 40px -30px rgba(0,0,0,.35);transform:translateY(-8px);opacity:0;visibility:hidden;transition:opacity .25s,transform .25s var(--ease),visibility .25s}
+  .nav.open nav{opacity:1;transform:none;visibility:visible}
+  .nav nav a:not(.btn-outline){display:block;padding:1rem 0;font-size:1.05rem;border-bottom:1px solid rgba(29,99,64,.15)}
+  .nav nav a:not(.btn-outline)::after{display:none}
+  .nav nav .btn-outline{margin-top:1rem;justify-content:space-between;padding:1rem 1.2rem}
+
+  .hero{padding-top:2rem;padding-bottom:1.5rem;min-height:21rem;align-content:start}
+  .hero-side h2{margin-bottom:.5rem}
+  .hero-photo{padding:1.25rem;min-height:26rem}
+  .hero-photo .btn-amber{width:100%;justify-content:space-between}
+  .facts{gap:1.2rem 1rem;margin-top:1.5rem;padding:1.2rem 0 2rem}
+  .facts dd{font-size:1.05rem}
+  .intro{padding-top:3rem;padding-bottom:3.5rem}
+  .dark{padding:3.5rem 0}
+  .dark.tight{padding-top:2.5rem}
+  .head{margin-bottom:1.5rem}
+  .book article{font-size:1rem}
+
+  /* What to expect: pills become a 2x2 picker over the photo */
+  .expect-photo{display:grid;grid-template-columns:1fr 1fr;align-content:end;gap:.5rem;padding:.75rem;min-height:24rem}
+  .pill{position:static!important;margin:0;animation:none;max-width:none;padding:.7rem .8rem;font-size:.78rem;border-radius:.9rem;min-height:44px}
+  .pill span{margin-left:auto}
+  .cap{grid-column:1/-1;margin-top:.25rem;max-width:none;padding:.8rem 1rem}
+  .moments{gap:1.25rem;margin-top:2rem}
+  .moment{padding-top:1rem}
+  .moment h3{margin:.8rem 0 .5rem}
+  .moment p{margin:0}
+  .grow{margin-top:3.5rem}
+
+  .facil{padding-top:3rem;padding-bottom:2.5rem}
+  .facil-grid{grid-template-columns:1fr 1fr;gap:1rem .75rem;margin-top:1.5rem}
+  .facil-grid article:last-child{grid-column:1/-1;max-width:calc(50% - .375rem)}
+  .facil h3{margin-top:.5rem}
+
+  .reg{padding:3.5rem 0}
+  .reg-grid{gap:2rem}
+  .reg-copy .display{margin-bottom:1.2rem}
+  .merch{gap:.6rem}
+  .merch button{padding:1.4rem .5rem 1.2rem;min-height:44px}
+  .foot{padding:3.5rem 0 1.5rem}
+  .foot-grid{gap:2rem}
+  .foot-bar{flex-direction:column;align-items:flex-start;gap:.6rem}
+}

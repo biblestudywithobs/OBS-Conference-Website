@@ -36,14 +36,13 @@ export default function Expect() {
       </div>
       <div className="moments">
         {items.map((x, i) => (
-          <Reveal as="article" key={x.n} delay={i * 120} className={`moment ${open === i ? "on" : ""}`}>
+          <Reveal as="article" key={x.n} delay={i * 120} className={`moment ${open === i ? "on" : ""}`} onClick={() => setOpen(i)}>
             <div className="top">
               <span>{x.n}</span>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{I[x.icon]}</svg>
             </div>
             <h3>{x.title}</h3>
             <p>{x.d}</p>
-            <button className="go" onClick={() => setOpen(i)}>{open === i ? "Selected activity" : "Explore this moment"} <span>↗</span></button>
           </Reveal>
         ))}
       </div>
