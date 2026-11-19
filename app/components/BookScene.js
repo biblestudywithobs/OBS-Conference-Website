@@ -14,15 +14,25 @@ const vertex = /* glsl */ `
   uniform float uProgress;
   uniform float uSize;
   uniform float uPixelRatio;
+  uniform vec2 uMouse;   // pointer in canvas NDC
+  uniform float uHover;  // 0..1, eased in while the pointer is over the hero
+  uniform float uAspect;
   varying float vAlpha;
   varying float vRise;
+  varying float vFly;
 
   void main() {
     float d = aSeed * 0.45;
     float p = smoothstep(d, d + 0.55, uProgress);
-    vec3 pos = mix(aStart, aTarget, p);
+    float e = 1.0 - pow(1.0 - p, 3.0);
+    vec3 pos = mix(aStart, aTarget, e);
+    // swirl in: particles spiral around the book on their way to it
+    float sw = (1.0 - e) * (2.2 + aSeed * 2.0);
+    pos.xz = mat2(cos(sw), -sin(sw), sin(sw), cos(sw)) * pos.xz;
+    pos.y += sin(e * 3.1416) * (aSeed - 0.3) * 0.9;
     pos.y += sin(uTime * 0.9 + aSeed * 40.0) * 0.012 * p;
     vAlpha = 0.9;
+    vFly = 1.0 - p;
 
     if (aRise > 0.5) {
       float t = fract(uTime * (0.035 + aSeed * 0.05) + aSeed * 13.0);
@@ -32,8 +42,15 @@ const vertex = /* glsl */ `
     vRise = aRise;
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = uSize * uPixelRatio * (0.55 + aSeed * 0.9) / -mv.z;
+    gl_PointSize = uSize * uPixelRatio * (0.55 + aSeed * 0.9) * (1.0 + vFly * 0.25) / -mv.z;
     gl_Position = projectionMatrix * mv;
+
+    // mouse: particles part around the pointer and drift back when it leaves
+    vec2 ndc = gl_Position.xy / gl_Position.w;
+    vec2 dir = (ndc - uMouse) * vec2(uAspect, 1.0);
+    float dist = length(dir);
+    float push = smoothstep(0.32, 0.0, dist) * uHover;
+    gl_Position.xy += normalize(dir + 1e-5) / vec2(uAspect, 1.0) * push * 0.16 * gl_Position.w;
   }
 `;
 
@@ -43,12 +60,13 @@ const fragment = /* glsl */ `
   uniform float uOpacity;
   varying float vAlpha;
   varying float vRise;
+  varying float vFly;
 
   void main() {
     float d = length(gl_PointCoord - 0.5);
     if (d > 0.5) discard;
     float a = smoothstep(0.5, 0.05, d) * vAlpha * uOpacity;
-    gl_FragColor = vec4(mix(uPage, uLight, vRise), a);
+    gl_FragColor = vec4(mix(uPage, uLight, max(vRise, vFly)), a);
   }
 `;
 
@@ -88,10 +106,7 @@ function buildBook(count) {
     target.set([x, y, z], i * 3);
 
     // start scattered on a large shell around the book
-    const th = Math.random() * Math.PI * 2;
-    const ph = Math.acos(Math.random() * 2 - 1);
-    const rad = 4 + Math.random() * 4;
-    start.set([rad * Math.sin(ph) * Math.cos(th), rad * Math.cos(ph), rad * Math.sin(ph) * Math.sin(th)], i * 3);
+    start.set([(Math.random() * 2 - 1) * 6.5, (Math.random() * 2 - 1) * 3.2, -3.5 + Math.random() * 4], i * 3);
 
     seed[i] = Math.random();
     rise[i] = Math.random() < 0.12 ? 1 : 0;
@@ -104,6 +119,8 @@ export default function BookScene() {
 
   useEffect(() => {
     let disposed = false;
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (!location.hash) scrollTo(0, 0);
     let cleanup = () => {};
 
     (async () => {
@@ -118,6 +135,7 @@ export default function BookScene() {
       } catch { gl = null; }
       if (!gl) return; // no WebGL: the page looks fine without it
 
+      const restOpacity = matchMedia("(max-width: 760px)").matches ? 0.38 : 0.55;
       const small = matchMedia("(max-width: 760px)").matches;
       const renderer = new THREE.WebGLRenderer({ canvas, context: gl, alpha: true, antialias: false, powerPreference: "low-power" });
       const ratio = Math.min(devicePixelRatio || 1, small ? 1.5 : 2);
@@ -142,7 +160,10 @@ export default function BookScene() {
         uProgress: { value: 0 },
         uSize: { value: small ? 22 : 40 },
         uPixelRatio: { value: ratio },
-        uOpacity: { value: small ? 0.32 : 0.5 },
+        uOpacity: { value: 1 },
+        uMouse: { value: new THREE.Vector2(9, 9) },
+        uHover: { value: 0 },
+        uAspect: { value: 1 },
         uPage: { value: new THREE.Color("#1D6340") },
         uLight: { value: new THREE.Color("#D9902F") },
       };
@@ -160,6 +181,7 @@ export default function BookScene() {
         if (!w || !h) return;
         renderer.setSize(w, h, false);
         camera.aspect = w / h;
+        uniforms.uAspect.value = w / h;
         camera.updateProjectionMatrix();
         const narrow = w < 900;
         group.position.set(narrow ? 0.75 : 1.6, narrow ? -1.0 : -0.35, 0);
@@ -169,10 +191,14 @@ export default function BookScene() {
       const ro = new ResizeObserver(layout);
       ro.observe(el);
 
-      const mouse = { x: 0, y: 0 };
+      const mouse = { x: 0, y: 0, nx: 9, ny: 9, inside: false };
       const onMove = (e) => {
         mouse.x = (e.clientX / innerWidth) * 2 - 1;
         mouse.y = (e.clientY / innerHeight) * 2 - 1;
+        const r = el.getBoundingClientRect();
+        mouse.inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        mouse.nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+        mouse.ny = -((e.clientY - r.top) / r.height) * 2 + 1;
       };
       addEventListener("pointermove", onMove, { passive: true });
 
@@ -193,18 +219,31 @@ export default function BookScene() {
         last = now;
         if (reduced()) {
           uniforms.uProgress.value = 1;
+          uniforms.uOpacity.value = restOpacity;
           renderer.render(scene, camera);
           return; // one still frame; MotionToggle / visibility restarts it
         }
         t += dt;
         uniforms.uTime.value = t;
-        uniforms.uProgress.value = Math.min(1, uniforms.uProgress.value + dt / 3.2);
+        uniforms.uProgress.value = Math.min(1, uniforms.uProgress.value + dt / 4.5);
+        // bold while gathering, then settle back so the heading stays readable
+        const settle = Math.max(0, (uniforms.uProgress.value - 0.75) / 0.25);
+        uniforms.uOpacity.value = 1 - settle * (1 - restOpacity);
+        uniforms.uHover.value += ((mouse.inside ? 1 : 0) - uniforms.uHover.value) * 0.08;
+        uniforms.uMouse.value.set(mouse.nx, mouse.ny);
         group.rotation.y += (mouse.x * 0.35 + Math.sin(t * 0.25) * 0.12 - group.rotation.y) * 0.04;
         group.rotation.x += (0.62 + mouse.y * 0.12 - group.rotation.x) * 0.04;
         renderer.render(scene, camera);
         if (visible) raf = requestAnimationFrame(frame);
       }
       raf = requestAnimationFrame(frame);
+
+      const replay = (e) => {
+        if (!e.persisted) return;
+        uniforms.uProgress.value = 0; t = 0;
+        if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
+      };
+      addEventListener("pageshow", replay);
 
       // restart when the footer "Reduce motion" toggle is switched off again
       const mo = new MutationObserver(() => {
@@ -216,6 +255,7 @@ export default function BookScene() {
         cancelAnimationFrame(raf);
         io.disconnect(); ro.disconnect(); mo.disconnect();
         removeEventListener("pointermove", onMove);
+        removeEventListener("pageshow", replay);
         geo.dispose(); mat.dispose(); renderer.dispose();
         canvas.remove();
       };
