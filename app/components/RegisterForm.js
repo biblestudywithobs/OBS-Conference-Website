@@ -64,11 +64,7 @@ export default function RegisterForm() {
       </div>
       <p className="note">Preference only. Pricing and availability to be confirmed.</p>
       <button className="btn-red submit" disabled={status === "sending"}>{status === "sending" ? "Saving…" : "Secure My Seat — Free"} <span>↗</span></button>
-      <p className="note">In the live service, details will be used to coordinate conference attendance.</p>
       {status === "error" && <p role="alert" className="err">Something went wrong. Please try again.</p>}
-      <details className="proto"><summary>Prototype controls</summary>
-        <button type="reset" onClick={() => { setStatus("idle"); setCity(""); setPick(merch[0]); }}>Reset form</button>
-      </details>
     </form>
   );
 }

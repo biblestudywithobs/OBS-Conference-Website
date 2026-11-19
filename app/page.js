@@ -3,6 +3,9 @@ import Expect from "./components/Expect";
 import Book from "./components/Book";
 import RegisterForm from "./components/RegisterForm";
 import { ScrollProgress, MotionToggle } from "./components/Chrome";
+import Nav from "./components/Nav";
+import Facilitators from "./components/Facilitators";
+import BookScene from "./components/BookScene";
 
 const facts = [
   ["When", "January 2, 2027"],
@@ -20,18 +23,11 @@ export default function Home() {
   return (
     <>
       <ScrollProgress />
-      <header className="nav">
-        <a href="#top" className="brand"><span className="mark">OBS</span><span>Conference ’27</span></a>
-        <nav>
-          <a href="#experience">The experience</a>
-          <a href="#facilitators">Facilitators</a>
-          <a href="#visit">Plan your visit</a>
-          <a href="#register" className="btn-outline">Save my seat <span>↗</span></a>
-        </nav>
-      </header>
+      <Nav />
 
       <main id="top">
         <section className="wrap hero">
+          <BookScene />
           <h1 className="display">
             <span className="line green"><span style={{ "--d": "100ms" }}>The Word is worth</span></span>
             <span className="line red"><span style={{ "--d": "300ms" }}>gathering around.</span></span>
@@ -66,7 +62,6 @@ export default function Home() {
           <div className="wrap">
             <Reveal className="head">
               <h2 className="display cream">Conference overview</h2>
-              <a href="#overview" className="link small">Full story visible <span>↗</span></a>
             </Reveal>
             <Reveal delay={150}><Book /></Reveal>
           </div>
@@ -90,10 +85,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="facilitators" className="wrap placeholder">
-          <Reveal as="h2" className="display green">Facilitators</Reveal>
-          <Reveal as="p" delay={150}>Add your facilitators here.</Reveal>
-        </section>
+        <Facilitators />
 
         <section id="register" className="reg">
           <div className="wrap reg-grid">
@@ -134,7 +126,6 @@ export default function Home() {
                 </a>
               ))}
             </div>
-            <small>Official contact links coming soon.</small>
           </Reveal>
         </div>
         <div className="wrap foot-bar">
