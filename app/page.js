@@ -6,6 +6,7 @@ import { ScrollProgress, MotionToggle } from "./components/Chrome";
 import Nav from "./components/Nav";
 import Facilitators from "./components/Facilitators";
 import BookScene from "./components/BookScene";
+import Cursor from "./components/Cursor";
 
 const facts = [
   ["When", "January 2, 2027"],
@@ -23,6 +24,7 @@ export default function Home() {
   return (
     <>
       <ScrollProgress />
+      <Cursor />
       <Nav />
 
       <main id="top">

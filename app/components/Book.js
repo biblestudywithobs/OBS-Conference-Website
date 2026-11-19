@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Typed from "./Typed";
 
 const story = [
@@ -14,15 +15,17 @@ const vision = [
 ];
 
 export default function Book() {
+  // one pen: "Our vision" is written after "Our story" is finished
+  const [storyDone, setStoryDone] = useState(false);
   return (
     <div className="book">
       <article>
         <div className="running"><span>Open Bible School</span><span>Our story</span></div>
-        <Typed paras={story} />
+        <Typed paras={story} onDone={() => setStoryDone(true)} />
       </article>
       <article>
         <div className="running"><span>Open Bible School</span><span>Our vision</span></div>
-        <Typed paras={vision} delay={700} />
+        <Typed paras={vision} delay={500} start={storyDone} />
       </article>
     </div>
   );
