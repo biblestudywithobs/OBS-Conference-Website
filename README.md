@@ -1,21 +1,182 @@
-# OBS Conference Website
+# OBS Conference ’27 — Website
 
-`integration` is where feature branches are merged and tested before `main`.
+The website for **OBS Conference ’27**, a one-day gathering by Open Bible School.
 
-This branch currently holds both implementations so the team can compare them
-and pick one to carry forward:
+> Bring your Bible. Bring your questions. Come as you are.
+> **January 2, 2027 · 9 AM–5 PM WAT · Ibadan, Nigeria · Registration is free**
 
-| Folder | Branch | Stack | Run |
-|---|---|---|---|
-| repo root (`app/`) | `johnkay-obs-design` | Next.js 15, JavaScript, plain CSS | `npm install && npm run dev` → http://localhost:3000 |
-| `frontend/` | `frontend/Daniel` | Next.js 16, TypeScript, Tailwind | `cd frontend && npm install && npm run dev -- -p 3001` → http://localhost:3001 |
+A single landing page: hero, conference overview (our story and vision), what to
+expect, facilitators, registration form and footer.
 
-## Workflow
+---
 
-1. Branch from `integration` (`feature/<name>`), open PRs into `integration`.
-2. When `integration` is reviewed and working, merge `integration` → `main`.
+## Quick start
 
-## Secrets
+Requirements: **Node.js 18.18+** (20 LTS recommended) and npm.
 
-Never commit API keys. Put them in `.env.local` (git-ignored), for example
-`RESEND_API_KEY=...`, and in the hosting provider's environment settings.
+```bash
+git clone https://github.com/biblestudywithobs/OBS-Conference-Website.git
+cd OBS-Conference-Website
+git checkout integration
+npm install
+npm run dev
+```
+
+Open http://localhost:3000.
+
+To test on your phone, run `npm run dev -- -H 0.0.0.0` and open
+`http://<your-computer's-IP>:3000` on a phone on the same Wi-Fi.
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server with hot reload |
+| `npm run build` | Production build (run this before opening a PR) |
+| `npm run start` | Serve the production build |
+
+---
+
+## Tech stack
+
+- **Next.js 15** (App Router) + **React 19**, plain JavaScript
+- **Plain CSS** in `app/globals.css` (no Tailwind in this app)
+- **three.js** for the hero animation, loaded on demand so it never slows the first paint
+- Fonts via `next/font/google`: Bebas Neue (display), Montserrat (UI), Lora (book pages)
+
+---
+
+## Project structure
+
+```
+app/
+  layout.js              fonts, page title and description
+  page.js                the landing page, section by section
+  globals.css            all styles (desktop first, mobile rules at max-width: 760px)
+  api/register/route.js  POST endpoint the registration form submits to
+  components/
+    Nav.js               sticky header; menu button and dropdown on mobile
+    BookScene.js         three.js hero: particles gather into an open Bible
+    Cursor.js            mouse tracker (dot + trailing ring), desktop only
+    Book.js              "Conference overview" two-page book
+    Typed.js             the fountain pen that writes the overview text
+    Expect.js            "What to expect": four moments with photo switcher
+    Facilitators.js      facilitator cards (placeholders until the lineup is final)
+    RegisterForm.js      registration form
+    Reveal.js            fade/slide-in on scroll
+    Chrome.js            scroll progress bar and the "Reduce motion" toggle
+public/images/           photos used on the page
+frontend/                earlier Next 16 + TypeScript + Tailwind version (see below)
+```
+
+---
+
+## Motion and accessibility
+
+The page is animated, but everything works without the animations:
+
+- **Hero:** on every page load, particles swirl in and gather into an open
+  Bible, light rises off the pages, and particles part around the mouse. It
+  pauses when scrolled out of view, uses fewer particles on phones, and is
+  skipped if WebGL isn't available.
+- **Overview:** a pen writes "Our story", then "Our vision". Screen readers get
+  the full text straight away.
+- **Mouse tracker:** only on devices with a mouse or trackpad; hidden in text fields.
+- **Reduce motion:** if the visitor's device asks for reduced motion, or they
+  switch on *Reduce motion* in the footer, all animation stops and content shows
+  immediately.
+
+Keep it that way: any new animation must respect
+`prefers-reduced-motion` and `[data-reduce="true"]` on `<html>`.
+
+---
+
+## Registration
+
+The form posts JSON to `/api/register`:
+
+```json
+{ "name": "", "email": "", "phone": "", "city": "", "otherCity": "",
+  "org": "", "first": "Yes|No", "accom": "Yes|No", "merch": "OBS T-shirt" }
+```
+
+**Status: not live yet.** `app/api/register/route.js` only validates the
+required fields and logs the registration. Still to do:
+
+1. Store registrations (Google Sheet, Supabase/Postgres, or similar).
+2. Send a confirmation email with [Resend](https://resend.com) using
+   `RESEND_API_KEY`.
+3. Add basic spam protection (honeypot field and rate limiting).
+
+---
+
+## Environment variables and secrets
+
+Copy `.env.example` to `.env.local` and fill in real values locally:
+
+```bash
+# .env.local  (git-ignored — never commit it)
+RESEND_API_KEY=
+RESEND_FROM="OBS Conference <hello@your-verified-domain>"
+```
+
+- **Never commit API keys** or paste them into code, issues, PRs or chat.
+  `.env*` files are already in `.gitignore`.
+- In production, set the same variables in the hosting provider's settings.
+- Use an **OBS-owned** Resend account with a verified domain and a
+  sending-only key, not a personal key.
+
+---
+
+## Branches and workflow
+
+```
+feature/<task>  ──PR──▶  integration  ──PR (when stable)──▶  main
+```
+
+1. Start from the latest `integration`:
+   ```bash
+   git checkout integration && git pull
+   git checkout -b feature/<short-task-name>
+   ```
+2. Keep PRs small and focused. Run `npm run build` and check the page on a
+   phone-sized screen before opening the PR.
+3. Open the PR into **`integration`**, not `main`. At least one review before merging.
+4. When `integration` is tested end to end, it is merged into `main`, which is
+   what goes live.
+
+| Branch | Purpose |
+|---|---|
+| `main` | Production. Only updated from `integration`. |
+| `integration` | Where all work is combined and tested. |
+| `feature/*` | One task each. |
+
+---
+
+## Two versions in this repo (temporary)
+
+The team built two versions in parallel; both were merged into `integration`
+so nothing is lost:
+
+| Location | Origin | Stack |
+|---|---|---|
+| repo root (`app/`) | `johnkay-obs-design` | Next.js 15, JavaScript, plain CSS — **the active version** (designer feedback, 3D hero and mobile work are here) |
+| `frontend/` | `frontend/Daniel` | Next.js 16, TypeScript, Tailwind |
+
+Run the older one with `cd frontend && npm install && npm run dev -- -p 3001`.
+Once the team agrees, anything still useful from `frontend/` gets moved into the
+root app and the folder is removed.
+
+---
+
+## Still to do
+
+- [ ] Make registration live (storage + Resend confirmation email)
+- [ ] Add the "What to expect" overview photo (`public/images/expect.jpg`)
+- [ ] Facilitator names and photos
+- [ ] Venue and arrival details
+- [ ] Contact email and real social links (Instagram, YouTube, WhatsApp)
+- [ ] Decide on hosting (e.g. Vercel) and a domain
+- [ ] Retire the `frontend/` version
+
+---
+
+© 2027 Open Bible School · *Enter the Word. Find your place.*
