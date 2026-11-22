@@ -91,22 +91,26 @@ Keep it that way: any new animation must respect
 
 ## Registration
 
-The form posts JSON to `/api/register`:
+The form posts JSON to `/api/register` (`app/api/register/route.js`, storage in `lib/registrations.js`):
 
 ```json
 { "name": "", "email": "", "phone": "", "city": "", "otherCity": "",
   "org": "", "first": "Yes|No", "accom": "Yes|No", "merch": "OBS T-shirt" }
 ```
 
-**Status: not live yet.** `app/api/register/route.js` only validates the
-required fields and logs the registration. Still to do:
-
-1. Store registrations (Google Sheet, Supabase/Postgres, or similar).
-2. Send a confirmation email with [Resend](https://resend.com) using
-   `RESEND_API_KEY`.
-3. Add basic spam protection (honeypot field and rate limiting).
-
----
+- **Seat numbers:** every registration gets the next seat number (`OBS27-0001`, `OBS27-0002`, …). It is shown
+  on the page and included in the confirmation email and the team copy.
+- **One registration per person:** the same email, or the same WhatsApp number in any format (`+234 803…`,
+  `0803…`), is refused with "You're already registered". The seat number is not shown again on the page
+  (anyone could type someone else's email); it is in the person's confirmation email.
+- **Attempt limit:** 5 attempts per device/network every 10 minutes, then "Too many attempts".
+- **Bots:** a hidden `website` field; submissions that fill it are ignored.
+- **Emails (Resend):** confirmation to the registrant and, if `RESEND_TEAM_INBOX` is set, a copy to the team.
+  An email failure never fails the registration; it is logged.
+- **Storage:** Redis over REST (`REDIS_REST_URL`, `REDIS_REST_TOKEN`; Upstash works). The duplicate check and the
+  seat number are one atomic step, so two people can never get the same seat. With no Redis configured, the
+  live site answers "Registration isn't open yet" rather than losing registrations. In development,
+  registrations go to `.data/registrations.json` (git-ignored); delete it to start again from seat 1.
 
 ## Environment variables and secrets
 
@@ -169,7 +173,7 @@ root app and the folder is removed.
 
 ## Still to do
 
-- [ ] Make registration live (storage + Resend confirmation email)
+- [ ] Set up the production Redis and Resend keys in the hosting settings
 - [ ] Add the "What to expect" overview photo (`public/images/expect.jpg`)
 - [ ] Facilitator names and photos
 - [ ] Venue and arrival details

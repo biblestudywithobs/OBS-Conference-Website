@@ -297,3 +297,11 @@ body{overflow-x:clip}
 @keyframes scribble{0%,100%{transform:translate(0,0)}30%{transform:translate(-1px,-2px)}60%{transform:translate(1px,0)}}
 @keyframes inkdot{0%,100%{transform:scale(1)}50%{transform:scale(.6)}}
 @media(max-width:760px){.pen svg{width:15px;height:69px}}
+
+/* ---- Registration: seat number + bot trap ---- */
+.hp{position:absolute!important;left:-10000px;width:1px;height:1px;overflow:hidden}
+.seat{display:inline-flex;justify-self:start;flex-direction:column;gap:.2rem;margin:1.2rem 0 1rem;padding:1rem 1.4rem;border:2px dashed var(--green);border-radius:12px;background:rgba(29,99,64,.06)}
+.seat span{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.seat strong{font-family:var(--f-display),Impact,sans-serif;font-size:2.2rem;letter-spacing:.06em;color:var(--green);line-height:1;font-weight:400}
+.again{justify-self:start;background:none;color:var(--green);font:inherit;font-weight:600;cursor:pointer}
+.again:hover{background:var(--green);color:var(--cream)}
