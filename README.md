@@ -107,10 +107,13 @@ The form posts JSON to `/api/register` (`app/api/register/route.js`, storage in 
 - **Bots:** a hidden `website` field; submissions that fill it are ignored.
 - **Emails (Resend):** confirmation to the registrant and, if `RESEND_TEAM_INBOX` is set, a copy to the team.
   An email failure never fails the registration; it is logged.
-- **Storage:** Redis over REST (`REDIS_REST_URL`, `REDIS_REST_TOKEN`; Upstash works). The duplicate check and the
-  seat number are one atomic step, so two people can never get the same seat. With no Redis configured, the
+- **Storage:** Supabase (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`). Run `supabase/conference_registrations.sql` once in the
+  project's SQL editor: it creates the `conference_registrations` table (with the seat number) and two functions. The
+  duplicate check and the seat number are one database call, so two people can never get the same seat. Only the
+  server's secret key can read or write the table (RLS on, no public access). With no Supabase configured, the
   live site answers "Registration isn't open yet" rather than losing registrations. In development,
   registrations go to `.data/registrations.json` (git-ignored); delete it to start again from seat 1.
+  Registrations can be viewed and exported (CSV) from the Supabase Table Editor.
 
 ## Environment variables and secrets
 
@@ -173,7 +176,7 @@ root app and the folder is removed.
 
 ## Still to do
 
-- [ ] Set up the production Redis and Resend keys in the hosting settings
+- [ ] Set the Supabase and Resend keys in the hosting settings
 - [ ] Add the "What to expect" overview photo (`public/images/expect.jpg`)
 - [ ] Facilitator names and photos
 - [ ] Venue and arrival details

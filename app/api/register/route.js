@@ -101,7 +101,7 @@ export async function POST(req) {
   if (normPhone(body.phone).length < 7) return fail(400, "bad_phone", "Please check your WhatsApp number.");
 
   if (!storeMode()) {
-    console.error("[register] No registration store configured (set REDIS_REST_URL and REDIS_REST_TOKEN)");
+    console.error("[register] No registration store configured (set SUPABASE_URL and SUPABASE_SECRET_KEY)");
     return fail(503, "closed", "Registration isn't open yet. Please check back soon.");
   }
 
