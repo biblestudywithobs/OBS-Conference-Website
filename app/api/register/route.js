@@ -47,8 +47,6 @@ function confirmationEmail(name, seat) {
       `Time: ${EVENT.time}`,
       `Where: ${EVENT.city}. Venue details coming soon.`,
       "",
-      "We'll be in touch on WhatsApp with arrival details.",
-      "",
       "See you there,",
       "The OBS Team",
     ].join("\n"),
@@ -62,7 +60,6 @@ function confirmationEmail(name, seat) {
   <p><strong>Date:</strong> ${EVENT.date}<br>
      <strong>Time:</strong> ${EVENT.time}<br>
      <strong>Where:</strong> ${EVENT.city}. Venue details coming soon.</p>
-  <p>We'll be in touch on WhatsApp with arrival details.</p>
   <p>See you there,<br>The OBS Team</p>
 </div>`,
   };

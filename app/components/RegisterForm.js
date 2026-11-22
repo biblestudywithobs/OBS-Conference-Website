@@ -52,8 +52,8 @@ export default function RegisterForm() {
         <div className="seat"><span>Your seat number</span><strong>{result.seat}</strong></div>
       )}
       <p>{result?.emailed === false
-        ? "Please note your seat number; you'll need it at check-in. We'll be in touch on WhatsApp."
-        : "We've emailed your confirmation with this seat number. Keep it for check-in. We'll be in touch on WhatsApp."}</p>
+        ? "Please note your seat number; you'll need it at check-in."
+        : "We've emailed your confirmation with this seat number. Keep it for check-in."}</p>
     </div>
   );
   if (status === "registered") return (
