@@ -1,6 +1,24 @@
 "use client";
 import { Fragment, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import RegisterForm from "./RegisterForm";
+import Cursor from "./Cursor";
+
+// The particle Bible pulls in three.js, so it only loads on desktop.
+const BookScene = dynamic(() => import("./BookScene"), { ssr: false });
+const DESKTOP = "(min-width: 900px) and (hover: hover) and (pointer: fine)";
+
+function useDesktop() {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const mq = matchMedia(DESKTOP);
+    const update = () => setDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return desktop;
+}
 import {
   ArrowDown, ArrowUpRight, Book, Calendar, Close, Menu, Mic, People, Pin, Plus, Question, SOCIAL, Ticket,
 } from "./icons";
@@ -253,6 +271,7 @@ function useMotion() {
 
 export default function Site() {
   const [reduced, toggleMotion] = useMotion();
+  const desktop = useDesktop();
   const [menu, setMenu] = useState(false);
   const menuBtn = useRef(null);
 
@@ -271,6 +290,7 @@ export default function Site() {
   return (
     <>
       <a className="skip-link" href="#register">Skip to registration</a>
+      {desktop && <Cursor />}
       <header className="b-header">
         <a href="#top" className="b-brand" aria-label="Open Bible School — home">
           <img src="/assets/obs-logo-green.png" alt="OBS" />
@@ -297,6 +317,7 @@ export default function Site() {
       <main>
         <section id="top" className="b-hero" aria-labelledby="hero-heading">
           <div className="hero-title-row">
+            {desktop && <BookScene />}
             <h1 id="hero-heading">{COPY.heroLine1}<br /><span>{COPY.heroLine2}</span></h1>
             <div className="hero-identity">
               <p className="hero-event-name">OBS CONFERENCE ’27</p>
